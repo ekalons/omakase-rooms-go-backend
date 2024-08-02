@@ -24,12 +24,7 @@ func Setup() {
 	router.GET("/rooms", handlers.GetRooms)
 	router.GET("/room/:id", handlers.GetRoomByID)
 	router.GET("/token", handlers.GetToken)
-
-	auth := router.Group("/")
-	auth.Use(middleware.AuthRequired())
-	{
-		auth.POST("/createRoom", handlers.PostRoom)
-	}
+	router.POST("/createRoom", middleware.AuthRequired(), handlers.PostRoom)
 
 	router.Run("localhost:8080")
 }
