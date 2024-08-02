@@ -1,22 +1,33 @@
 # omakase-rooms-go-backend
 
-A GoLang backend service with clean architecture for the Omakase Rooms project.
+A GoLang + Docker backend service with clean architecture for the Omakase Rooms project.
 
 ## How to run locally
 
 ### Prerequisites
 
-- GoLang
-
-### Steps
-
 1. Clone the repository
 2. Install Go
 3. Add the required environment variables in a `.env` file in the root directory. The required variables can be found in the `.env.example` file.
-4. Run the following command to start the server
+
+### Without Docker
+
+Run the following command to start the server
 
 ```bash
 go run cmd/main.go
+```
+
+### With Docker
+
+Install docker and run the following commands
+
+```
+docker build -t omakase-rooms-go-backend -f Dockerfile .
+```
+
+```
+docker run --rm -p 8080:8080 omakase-rooms-go-backend
 ```
 
 5. The server will start on port 8080
@@ -45,4 +56,16 @@ POST /room
 
 ```http
 POST /token
+```
+
+## Deployment
+
+```
+docker build -t omakase-rooms-go-backend .
+```
+
+or run the lightweight multistage build
+
+```
+docker build -t omakase-rooms-go-backend:multistage -f Dockerfile.multistage .
 ```
