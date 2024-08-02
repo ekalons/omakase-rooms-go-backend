@@ -3,7 +3,6 @@ package middleware
 import (
 	"errors"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var jwtSecret = []byte(configuration.Cfg.JWTSecret)
 
 func GenerateToken(clientSecret string) (string, error) {
 	expectedSecret := configuration.Cfg.ClientSecret
