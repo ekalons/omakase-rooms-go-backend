@@ -30,8 +30,6 @@ docker build -t omakase-rooms-go-backend -f Dockerfile .
 docker run --rm -p 8080:8080 omakase-rooms-go-backend
 ```
 
-5. The server will start on port 8080
-
 ## API Documentation
 
 ### Get all rooms
