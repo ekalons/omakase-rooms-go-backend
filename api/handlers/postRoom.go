@@ -3,20 +3,27 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/ekalons/omakase-rooms-go-backend/db"
 	"github.com/ekalons/omakase-rooms-go-backend/models"
 	"github.com/gin-gonic/gin"
 )
 
-func PostRooms(c *gin.Context) {
+func PostRoom(c *gin.Context) {
 	var newRoom models.Room
 
-	// Call BindJSON to bind the received JSON to
-	// newRoom.
 	if err := c.BindJSON(&newRoom); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	// Add the new room to the slice.
-	// rooms = append(rooms, newRoom)
-	c.IndentedJSON(http.StatusCreated, newRoom)
+	result, err := db.InsertRoom(newRoom)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create room"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, gin.H{
+		"insertedID": result.InsertedID,
+		"room":       newRoom,
+	})
 }

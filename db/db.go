@@ -89,3 +89,18 @@ func FetchRoomById(id string) (*models.Room, error) {
 
 	return &room, nil // Document found
 }
+
+func InsertRoom(newRoom models.Room) (*mongo.InsertOneResult, error) {
+	if newRoom.ID.IsZero() {
+		newRoom.ID = primitive.NewObjectID()
+	}
+
+	collection := mongoClient.Database(configuration.Cfg.MongoDBDatabaseName).Collection(configuration.Cfg.MongoDBCollectionName)
+	result, err := collection.InsertOne(context.TODO(), newRoom)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

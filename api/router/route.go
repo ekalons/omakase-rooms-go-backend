@@ -21,8 +21,8 @@ func Setup() {
 	}))
 
 	router.GET("/rooms", handlers.GetRooms)
-	router.GET("/rooms/:id", handlers.GetRoomByID)
-	router.POST("/rooms", handlers.PostRooms)
+	router.GET("/room/:id", handlers.GetRoomByID)
+	router.POST("/createRoom", handlers.PostRoom)
 
 	router.Run("localhost:8080")
 }
