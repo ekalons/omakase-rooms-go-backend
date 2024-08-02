@@ -21,5 +21,11 @@
 go.work
 go.work.sum
 
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
 # env file
 .env
