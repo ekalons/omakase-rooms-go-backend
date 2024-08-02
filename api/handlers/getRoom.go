@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/ekalons/omakase-rooms-go-backend/db"
@@ -14,7 +13,6 @@ func GetRoomByID(c *gin.Context) {
 	room, err := db.FetchRoomById(id)
 
 	if err != nil {
-		fmt.Println("Error fetching room by ID:", err) // Log the error for debugging
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch room by ID"})
 		return
 	}
