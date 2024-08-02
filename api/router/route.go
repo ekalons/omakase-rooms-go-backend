@@ -14,7 +14,7 @@ func Setup() {
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{configuration.Cfg.FrontEndUrl},
-		AllowMethods:     []string{"GET"},
+		AllowMethods:     []string{"GET", "POST"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
