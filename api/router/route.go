@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ekalons/omakase-rooms-go-backend/api/handlers"
+	"github.com/ekalons/omakase-rooms-go-backend/api/middleware"
 	configuration "github.com/ekalons/omakase-rooms-go-backend/config"
 )
 
@@ -22,7 +23,13 @@ func Setup() {
 
 	router.GET("/rooms", handlers.GetRooms)
 	router.GET("/room/:id", handlers.GetRoomByID)
-	router.POST("/createRoom", handlers.PostRoom)
+	router.GET("/token", handlers.GetToken)
+
+	auth := router.Group("/")
+	auth.Use(middleware.AuthRequired())
+	{
+		auth.POST("/createRoom", handlers.PostRoom)
+	}
 
 	router.Run("localhost:8080")
 }

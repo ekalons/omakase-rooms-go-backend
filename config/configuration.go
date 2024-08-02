@@ -16,6 +16,8 @@ type Config struct {
 	MongoDBCollectionName string
 	MongoDBDatabaseName   string
 	FrontEndUrl           string
+	ClientSecret          string
+	JWTClaimsSubKey       string
 }
 
 var Cfg Config
@@ -32,7 +34,10 @@ func Load() {
 		MongoDBCollectionName: os.Getenv("MONGO_DB_COLLECTION_NAME"),
 		MongoDBDatabaseName:   os.Getenv("MONGO_DB_DATABASE_NAME"),
 		FrontEndUrl:           os.Getenv("FRONTEND_URL"),
+		ClientSecret:          os.Getenv("CLIENT_SECRET"),
+		JWTClaimsSubKey:       os.Getenv("JWT_CLAIMS_SUB_KEY"),
 	}
+
 	if err := validateEnvVars(Cfg); err != nil {
 		log.Fatal(err)
 	}
