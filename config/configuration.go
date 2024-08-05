@@ -19,6 +19,7 @@ type Config struct {
 	ClientSecret          string
 	JWTSecret             string
 	JWTClaimsSubKey       string
+	Environment           string
 }
 
 var Cfg Config
@@ -38,6 +39,7 @@ func Load() {
 		ClientSecret:          os.Getenv("CLIENT_SECRET"),
 		JWTSecret:             os.Getenv("JWT_SECRET"),
 		JWTClaimsSubKey:       os.Getenv("JWT_CLAIMS_SUB_KEY"),
+		Environment:           os.Getenv("ENVIRONMENT"),
 	}
 
 	if err := validateEnvVars(Cfg); err != nil {

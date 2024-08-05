@@ -12,6 +12,9 @@ import (
 func Setup() {
 
 	router := gin.Default()
+	if configuration.Cfg.Environment == "PROD" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{configuration.Cfg.FrontEndUrl},
@@ -24,7 +27,7 @@ func Setup() {
 	router.GET("/rooms", handlers.GetRooms)
 	router.GET("/room/:id", handlers.GetRoomByID)
 	router.GET("/token", handlers.GetToken)
-	router.POST("/createRoom", middleware.AuthRequired(), handlers.PostRoom)
+	router.POST("/createRoom", middleware.AuthRequired(), handlers.CreateRoom)
 
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }

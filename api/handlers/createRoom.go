@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PostRoom(c *gin.Context) {
+func CreateRoom(c *gin.Context) {
 	var newRoom models.Room
 
 	if err := c.BindJSON(&newRoom); err != nil {
