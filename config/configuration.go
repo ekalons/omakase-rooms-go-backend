@@ -5,8 +5,6 @@ import (
 	"log"
 	"os"
 	"reflect"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -25,9 +23,6 @@ type Config struct {
 var Cfg Config
 
 func Load() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	Cfg = Config{
 		MongoDBUsername:       os.Getenv("MONGO_DB_USERNAME"),
@@ -45,7 +40,6 @@ func Load() {
 	if err := validateEnvVars(Cfg); err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func validateEnvVars(cfg Config) error {

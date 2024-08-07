@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.multistage
+    image: omakase-rooms-go-backend:multistage
+    container_name: omakase-rooms-go-backend-multistage
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "$PORT:$PORT"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_DB_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_DB_PASSWORD
+    ports:
+      - "$DB_PORT:$MONGO_DB_PORT"
+    volumes:
+      - dbdata:/data/db
+
+volumes:
+  dbdata:
