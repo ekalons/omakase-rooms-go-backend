@@ -19,7 +19,7 @@ WORKDIR /
 
 COPY --from=build-stage /omakase-rooms-go-backend /omakase-rooms-go-backend
 
-EXPOSE 8080
+# EXPOSE 8080
 
 USER nonroot:nonroot
 
