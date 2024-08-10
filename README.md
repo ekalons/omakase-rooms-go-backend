@@ -27,17 +27,7 @@ docker build -t omakase-rooms-go-backend -f Dockerfile .
 ```
 
 ```
-docker run --rm -p 8080:8080 omakase-rooms-go-backend
-```
-
-### Running the multistage version with Docker Compose
-
-```
-docker-compose down
-```
-
-```
-docker-compose up -d
+docker run --rm --env-file .env -p 8080:8080 omakase-rooms-go-backend
 ```
 
 ## API Documentation
