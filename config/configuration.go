@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"reflect"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -23,6 +25,14 @@ type Config struct {
 var Cfg Config
 
 func Load() {
+
+	fmt.Println("Environment: ", os.Getenv("ENVIRONMENT"))
+
+	if os.Getenv("ENVIRONMENT") != "PROD" {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}
 
 	Cfg = Config{
 		MongoDBUsername:       os.Getenv("MONGO_DB_USERNAME"),

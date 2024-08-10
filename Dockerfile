@@ -10,6 +10,8 @@ RUN go mod init omakase-rooms-go-backend
 
 # Copy local code to the container image.
 COPY . .
+COPY .env /app/.env
+
 
 # Build the command inside the container.
 RUN CGO_ENABLED=0 GOOS=linux go build -o /omakase-rooms-go-backend ./cmd
