@@ -20,6 +20,57 @@ spec:
           env:
             - name: PORT
               value: "8080"
+            - name: FRONTEND_URL
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: FRONTEND_URL
+            - name: MONGO_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_USERNAME
+            - name: MONGO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_PASSWORD
+            - name: MONGO_DB_CLUSTER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_CLUSTER_NAME
+            - name: MONGO_DB_COLLECTION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_COLLECTION_NAME
+            - name: MONGO_DB_DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_DATABASE_NAME
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: CLIENT_SECRET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: JWT_SECRET
+            - name: JWT_CLAIMS_SUB_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: JWT_CLAIMS_SUB_KEY
+            - name: ENVIRONMENT
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: ENVIRONMENT
+
           resources:
             requests:
               memory: "1Gi"
