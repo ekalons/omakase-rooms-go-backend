@@ -2,9 +2,9 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile.multistage
-    image: omakase-rooms-go-backend:multistage
-    container_name: omakase-rooms-go-backend-multistage
+      dockerfile: Dockerfile
+    image: omakase-rooms-go-backend
+    container_name: omakase-rooms-go-backend
     restart: unless-stopped
     env_file: .env
     ports:
