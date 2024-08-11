@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 
@@ -22,7 +23,7 @@ func Connect() {
 
 	mongoUri := "mongodb+srv://" + configuration.Cfg.MongoDBUsername + ":" + configuration.Cfg.MongoDBPassword + "@roomscluster.tdmleyq.mongodb.net/?retryWrites=true&w=majority&appName=RoomsCluster"
 
-	opts := options.Client().ApplyURI(mongoUri).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(mongoUri).SetTLSConfig(&tls.Config{}).SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
