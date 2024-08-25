@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 
@@ -18,10 +19,11 @@ import (
 var mongoClient *mongo.Client
 
 func Connect() {
-	// Use the SetServerAPIOptions() method to set the version of the Stable API on the client
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-	opts := options.Client().ApplyURI("mongodb+srv://" + configuration.Cfg.MongoDBUsername + ":" + configuration.Cfg.MongoDBPassword + "@roomscluster.tdmleyq.mongodb.net/?retryWrites=true&w=majority&appName=RoomsCluster").SetServerAPIOptions(serverAPI)
+	mongoUri := "mongodb+srv://" + configuration.Cfg.MongoDBUsername + ":" + configuration.Cfg.MongoDBPassword + "@roomscluster.tdmleyq.mongodb.net/?retryWrites=true&w=majority&appName=RoomsCluster"
+
+	opts := options.Client().ApplyURI(mongoUri).SetTLSConfig(&tls.Config{}).SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)

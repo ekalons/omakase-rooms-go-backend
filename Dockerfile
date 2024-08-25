@@ -1,27 +1,27 @@
-# syntax=docker/dockerfile:1
+# Use the offical Go image to create a build artifact.
+# This is based on Debian and sets the GOPATH to /go.
+# https://hub.docker.com/_/golang
 
-FROM golang:1.21
-
-# Set destination for COPY
+FROM golang:1.22.0 AS builder
 WORKDIR /app
 
-# Download Go modules
-COPY go.mod go.sum ./
-RUN go mod download
 
-# Copy the source code. Note the slash at the end, as explained in
-# https://docs.docker.com/reference/dockerfile/#copy
+RUN go mod init omakase-rooms-go-backend
+
+# Copy local code to the container image.
 COPY . .
 
-# Build
+
+# Build the command inside the container.
 RUN CGO_ENABLED=0 GOOS=linux go build -o /omakase-rooms-go-backend ./cmd
 
-# Optional:
-# To bind to a TCP port, runtime parameters must be supplied to the docker command.
-# But we can document in the Dockerfile what ports
-# the application is going to listen on by default.
-# https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 8080
+FROM gcr.io/distroless/base-debian11
+
+WORKDIR /
+
+
+COPY --from=builder /omakase-rooms-go-backend /omakase-rooms-go-backend
 
 # Run
-CMD ["/omakase-rooms-go-backend"]
+USER nonroot:nonroot
+ENTRYPOINT ["/omakase-rooms-go-backend"]

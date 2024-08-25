@@ -25,8 +25,13 @@ type Config struct {
 var Cfg Config
 
 func Load() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+
+	fmt.Println("Environment: ", os.Getenv("ENVIRONMENT"))
+
+	if os.Getenv("ENVIRONMENT") != "PROD" {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 
 	Cfg = Config{
@@ -45,7 +50,6 @@ func Load() {
 	if err := validateEnvVars(Cfg); err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func validateEnvVars(cfg Config) error {
