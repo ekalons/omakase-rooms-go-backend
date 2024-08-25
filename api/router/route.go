@@ -1,6 +1,8 @@
 package route
 
 import (
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
@@ -17,7 +19,7 @@ func Setup() {
 	}
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{configuration.Cfg.FrontEndUrl},
+		AllowOrigins:     strings.Split(configuration.Cfg.FrontEndUrl, ","),
 		AllowMethods:     []string{"GET", "POST"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
