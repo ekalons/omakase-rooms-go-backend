@@ -1,7 +1,11 @@
 package route
 
 import (
+	"fmt"
+	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -11,8 +15,15 @@ import (
 	configuration "github.com/ekalons/omakase-rooms-go-backend/config"
 )
 
-func Setup() {
+func healthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":      "healthy",
+		"environment": configuration.Cfg.Environment,
+		"timestamp":   fmt.Sprintf("%d", time.Now().Unix()),
+	})
+}
 
+func Setup() {
 	router := gin.Default()
 	if configuration.Cfg.Environment == "PROD" {
 		gin.SetMode(gin.ReleaseMode)
@@ -26,6 +37,8 @@ func Setup() {
 		AllowCredentials: true,
 	}))
 
+	router.GET("/health", healthCheck)
+
 	api := router.Group("/api")
 	{
 		api.GET("/rooms", handlers.GetRooms)
@@ -34,5 +47,9 @@ func Setup() {
 		api.POST("/createRoom", middleware.AuthRequired(), handlers.CreateRoom)
 	}
 
-	router.Run(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	router.Run(fmt.Sprintf(":%s", port))
 }
