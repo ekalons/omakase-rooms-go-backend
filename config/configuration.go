@@ -15,6 +15,7 @@ type Config struct {
 	MongoDBClustername    string
 	MongoDBCollectionName string
 	MongoDBDatabaseName   string
+	MongoDBAppName        string
 	FrontEndUrl           string
 	ClientSecret          string
 	JWTSecret             string
@@ -25,7 +26,6 @@ type Config struct {
 var Cfg Config
 
 func Load() {
-
 	fmt.Println("Environment: ", os.Getenv("ENVIRONMENT"))
 
 	if os.Getenv("ENVIRONMENT") != "PROD" {
@@ -40,6 +40,7 @@ func Load() {
 		MongoDBClustername:    os.Getenv("MONGO_DB_CLUSTER_NAME"),
 		MongoDBCollectionName: os.Getenv("MONGO_DB_COLLECTION_NAME"),
 		MongoDBDatabaseName:   os.Getenv("MONGO_DB_DATABASE_NAME"),
+		MongoDBAppName:        os.Getenv("MONGO_DB_APP_NAME"),
 		FrontEndUrl:           os.Getenv("FRONTEND_URL"),
 		ClientSecret:          os.Getenv("CLIENT_SECRET"),
 		JWTSecret:             os.Getenv("JWT_SECRET"),

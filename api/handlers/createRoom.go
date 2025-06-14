@@ -16,6 +16,11 @@ func CreateRoom(c *gin.Context) {
 		return
 	}
 
+	if err := newRoom.Validate(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	result, err := db.InsertRoom(newRoom)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create room"})

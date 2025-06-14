@@ -26,10 +26,13 @@ func Setup() {
 		AllowCredentials: true,
 	}))
 
-	router.GET("/rooms", handlers.GetRooms)
-	router.GET("/room/:id", handlers.GetRoomByID)
-	router.GET("/token", handlers.GetToken)
-	router.POST("/createRoom", middleware.AuthRequired(), handlers.CreateRoom)
+	api := router.Group("/api")
+	{
+		api.GET("/rooms", handlers.GetRooms)
+		api.GET("/room/:id", handlers.GetRoomByID)
+		api.GET("/token", handlers.GetToken)
+		api.POST("/createRoom", middleware.AuthRequired(), handlers.CreateRoom)
+	}
 
 	router.Run(":8080")
 }
