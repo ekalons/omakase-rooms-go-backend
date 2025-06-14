@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/ekalons/omakase-rooms-go-backend/models"
 
@@ -18,24 +19,37 @@ import (
 
 var mongoClient *mongo.Client
 
-func Connect() {
+func Connect() error {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-	mongoUri := "mongodb+srv://" + configuration.Cfg.MongoDBUsername + ":" + configuration.Cfg.MongoDBPassword + "@roomscluster.tdmleyq.mongodb.net/?retryWrites=true&w=majority&appName=RoomsCluster"
+	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
+		configuration.Cfg.MongoDBUsername,
+		configuration.Cfg.MongoDBPassword,
+		configuration.Cfg.MongoDBClustername,
+		configuration.Cfg.MongoDBAppName,
+	)
 
-	opts := options.Client().ApplyURI(mongoUri).SetTLSConfig(&tls.Config{}).SetServerAPIOptions(serverAPI)
+	opts := options.Client().
+		ApplyURI(mongoUri).
+		SetTLSConfig(&tls.Config{}).
+		SetServerAPIOptions(serverAPI).
+		SetMaxPoolSize(100).
+		SetMinPoolSize(10).
+		SetMaxConnIdleTime(5 * time.Minute).
+		SetConnectTimeout(10 * time.Second)
 
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	mongoClient = client
 
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	return nil
 }
 
 func Disconnect() {

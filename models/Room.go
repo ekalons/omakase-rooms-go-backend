@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -113,25 +112,34 @@ func validateMinimum(field string, value, min int) string {
 }
 
 func validateURL(field, value string) string {
-	_, err := url.ParseRequestURI(value)
-	if err != nil {
-		return fmt.Sprintf("%s must be a valid URL", field)
+	// Basic check for scheme and host
+	if !strings.HasPrefix(value, "http://") && !strings.HasPrefix(value, "https://") {
+		return fmt.Sprintf("%s must start with http:// or https://", field)
 	}
+
+	// Remove the scheme for further parsing
+	withoutScheme := strings.TrimPrefix(strings.TrimPrefix(value, "http://"), "https://")
+
+	// Check if there's at least one dot in the remaining string (simple host check)
+	if !strings.Contains(withoutScheme, ".") {
+		return fmt.Sprintf("%s must contain a valid host", field)
+	}
+
 	return ""
 }
 
 func validateCoordinates(coords Coordinates) string {
 	var errors []string
 
-	if coords.Latitude == 0 {
-		errors = append(errors, "Latitude is required")
-	} else if coords.Latitude < -90 || coords.Latitude > 90 {
+	if coords.Latitude == 0 && coords.Longitude == 0 {
+		return "Latitude is required; Longitude is required"
+	}
+
+	if coords.Latitude < -90 || coords.Latitude > 90 {
 		errors = append(errors, "Latitude must be between -90 and 90")
 	}
 
-	if coords.Longitude == 0 {
-		errors = append(errors, "Longitude is required")
-	} else if coords.Longitude < -180 || coords.Longitude > 180 {
+	if coords.Longitude < -180 || coords.Longitude > 180 {
 		errors = append(errors, "Longitude must be between -180 and 180")
 	}
 

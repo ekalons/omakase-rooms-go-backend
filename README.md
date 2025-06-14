@@ -47,7 +47,7 @@ GET /room/{id}
 ### Create a room (Auth)
 
 ```http
-POST /room
+POST /createRoom
 ```
 
 ### Get token (Auth)
