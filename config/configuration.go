@@ -10,9 +10,12 @@ import (
 )
 
 type Config struct {
-	MongoDBUsername       string
+	// MongoDB configuration - support both connection string and individual components
+	MongoURL              string // For Railway's MONGO_URL or MONGO_PUBLIC_URL
+	MongoDBUsername       string // Fallback to individual components
 	MongoDBPassword       string
-	MongoDBClustername    string
+	MongoDBHost           string
+	MongoDBPort           string
 	MongoDBCollectionName string
 	MongoDBDatabaseName   string
 	MongoDBAppName        string
@@ -35,9 +38,11 @@ func Load() {
 	}
 
 	Cfg = Config{
-		MongoDBUsername:       os.Getenv("MONGO_DB_USERNAME"),
-		MongoDBPassword:       os.Getenv("MONGO_DB_PASSWORD"),
-		MongoDBClustername:    os.Getenv("MONGO_DB_CLUSTER_NAME"),
+		MongoURL:              getMongoURL(),
+		MongoDBUsername:       getEnvWithFallback("MONGOUSER", "MONGO_DB_USERNAME"),
+		MongoDBPassword:       getEnvWithFallback("MONGOPASSWORD", "MONGO_DB_PASSWORD"),
+		MongoDBHost:           getEnvWithFallback("MONGOHOST", "MONGO_DB_HOST"),
+		MongoDBPort:           getEnvWithFallback("MONGOPORT", "MONGO_DB_PORT"),
 		MongoDBCollectionName: os.Getenv("MONGO_DB_COLLECTION_NAME"),
 		MongoDBDatabaseName:   os.Getenv("MONGO_DB_DATABASE_NAME"),
 		MongoDBAppName:        os.Getenv("MONGO_DB_APP_NAME"),
@@ -57,12 +62,52 @@ func validateEnvVars(cfg Config) error {
 	v := reflect.ValueOf(cfg)
 	typeOfCfg := v.Type()
 
+	// Check MongoDB configuration - either MongoURL or individual components must be set
+	if cfg.MongoURL == "" {
+		mongoFields := []string{"MongoDBUsername", "MongoDBPassword", "MongoDBHost", "MongoDBPort"}
+		for _, fieldName := range mongoFields {
+			field, _ := typeOfCfg.FieldByName(fieldName)
+			value := v.FieldByName(fieldName)
+			if value.Interface() == "" {
+				return fmt.Errorf("environment variable for %s is not set (required when MongoURL is not provided)", field.Name)
+			}
+		}
+	}
+
+	// Check other required fields (excluding MongoDB fields which are handled above)
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
+		fieldType := typeOfCfg.Field(i)
+
+		// Skip MongoDB fields as they're handled above
+		if fieldType.Name == "MongoURL" || fieldType.Name == "MongoDBUsername" ||
+			fieldType.Name == "MongoDBPassword" || fieldType.Name == "MongoDBHost" ||
+			fieldType.Name == "MongoDBPort" {
+			continue
+		}
+
 		if field.Interface() == "" {
-			return fmt.Errorf("environment variable for %s is not set", typeOfCfg.Field(i).Name)
+			return fmt.Errorf("environment variable for %s is not set", fieldType.Name)
 		}
 	}
 
 	return nil
+}
+
+func getMongoURL() string {
+	// Try Railway's connection strings first
+	if url := os.Getenv("MONGO_URL"); url != "" {
+		return url
+	}
+	if url := os.Getenv("MONGO_PUBLIC_URL"); url != "" {
+		return url
+	}
+	return ""
+}
+
+func getEnvWithFallback(primary, fallback string) string {
+	if value := os.Getenv(primary); value != "" {
+		return value
+	}
+	return os.Getenv(fallback)
 }

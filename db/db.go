@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"time"
@@ -20,19 +19,29 @@ import (
 var mongoClient *mongo.Client
 
 func Connect() error {
-	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	var mongoUri string
 
-	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
-		configuration.Cfg.MongoDBUsername,
-		configuration.Cfg.MongoDBPassword,
-		configuration.Cfg.MongoDBClustername,
-		configuration.Cfg.MongoDBAppName,
-	)
+	// Use Railway's connection string if available
+	if configuration.Cfg.MongoURL != "" {
+		mongoUri = configuration.Cfg.MongoURL
+		fmt.Println("Using MONGO_URL connection string")
+	} else {
+		// Build connection string from individual components
+		mongoUri = fmt.Sprintf("mongodb://%s:%s@%s:%s/%s",
+			configuration.Cfg.MongoDBUsername,
+			configuration.Cfg.MongoDBPassword,
+			configuration.Cfg.MongoDBHost,
+			configuration.Cfg.MongoDBPort,
+			configuration.Cfg.MongoDBDatabaseName,
+		)
+		fmt.Printf("Built connection string with host: %s, port: %s, database: %s\n",
+			configuration.Cfg.MongoDBHost,
+			configuration.Cfg.MongoDBPort,
+			configuration.Cfg.MongoDBDatabaseName)
+	}
 
 	opts := options.Client().
 		ApplyURI(mongoUri).
-		SetTLSConfig(&tls.Config{}).
-		SetServerAPIOptions(serverAPI).
 		SetMaxPoolSize(100).
 		SetMinPoolSize(10).
 		SetMaxConnIdleTime(5 * time.Minute).
@@ -41,12 +50,12 @@ func Connect() error {
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 	mongoClient = client
 
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
-		return err
+		return fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 	return nil
