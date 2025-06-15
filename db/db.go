@@ -38,6 +38,7 @@ func Connect() error {
 		SetMaxConnIdleTime(5 * time.Minute).
 		SetConnectTimeout(10 * time.Second)
 
+	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		return err
@@ -93,13 +94,13 @@ func FetchRoomById(id string) (*models.Room, error) {
 	// Create a variable to hold the result
 	var room models.Room
 
+	// Find the document in the collection and decode it into the result variable
 	collection := mongoClient.Database(configuration.Cfg.MongoDBDatabaseName).Collection(configuration.Cfg.MongoDBCollectionName)
 	err = collection.FindOne(context.TODO(), filter).Decode(&room)
-
 	if err == mongo.ErrNoDocuments {
-		return nil, nil
+		return nil, nil // No document found
 	} else if err != nil {
-		return nil, err
+		return nil, err // An error occurred
 	}
 
 	return &room, nil // Document found

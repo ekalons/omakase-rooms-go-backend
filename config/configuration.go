@@ -17,7 +17,6 @@ type Config struct {
 	MongoDBDatabaseName   string
 	MongoDBAppName        string
 	FrontEndUrl           string
-	QuotaGuardStaticURL   string
 	ClientSecret          string
 	JWTSecret             string
 	JWTClaimsSubKey       string
@@ -31,7 +30,7 @@ func Load() {
 
 	if os.Getenv("ENVIRONMENT") != "PROD" {
 		if err := godotenv.Load(); err != nil {
-			fmt.Println("Note: .env file not found, using environment variables directly")
+			log.Fatal("Error loading .env file")
 		}
 	}
 
@@ -43,7 +42,6 @@ func Load() {
 		MongoDBDatabaseName:   os.Getenv("MONGO_DB_DATABASE_NAME"),
 		MongoDBAppName:        os.Getenv("MONGO_DB_APP_NAME"),
 		FrontEndUrl:           os.Getenv("FRONTEND_URL"),
-		QuotaGuardStaticURL:   os.Getenv("QUOTA_GUARD_STATIC_URL"),
 		ClientSecret:          os.Getenv("CLIENT_SECRET"),
 		JWTSecret:             os.Getenv("JWT_SECRET"),
 		JWTClaimsSubKey:       os.Getenv("JWT_CLAIMS_SUB_KEY"),

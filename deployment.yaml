@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: omakase-rooms-go-backend-gke
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: omakase-rooms-go-backend
+  template:
+    metadata:
+      labels:
+        app: omakase-rooms-go-backend
+    spec:
+      containers:
+        - name: omakase-rooms-go-backend-app
+          image: europe-west3-docker.pkg.dev/omakase-rooms-go-backend-gcp/omakase-rooms-go-backend-repo/omakase-rooms-go-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: FRONTEND_URL
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: FRONTEND_URL
+            - name: MONGO_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_USERNAME
+            - name: MONGO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_PASSWORD
+            - name: MONGO_DB_CLUSTER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_CLUSTER_NAME
+            - name: MONGO_DB_COLLECTION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_COLLECTION_NAME
+            - name: MONGO_DB_DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: MONGO_DB_DATABASE_NAME
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: CLIENT_SECRET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: JWT_SECRET
+            - name: JWT_CLAIMS_SUB_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: JWT_CLAIMS_SUB_KEY
+            - name: ENVIRONMENT
+              valueFrom:
+                secretKeyRef:
+                  name: omakase-rooms-go-backend-secrets
+                  key: ENVIRONMENT
+
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+              ephemeral-storage: "1Gi"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+              ephemeral-storage: "1Gi"
