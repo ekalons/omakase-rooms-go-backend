@@ -5,8 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/ekalons/omakase-rooms-go-backend/models"
@@ -24,52 +22,18 @@ var mongoClient *mongo.Client
 func Connect() error {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-	// Build MongoDB URI with SOCKS5 proxy parameters when in PROD environment
-	var mongoUri string
+	// Use standard mongodb+srv:// connection - QGTunnel will handle the proxy routing
+	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
+		configuration.Cfg.MongoDBUsername,
+		configuration.Cfg.MongoDBPassword,
+		configuration.Cfg.MongoDBClustername,
+		configuration.Cfg.MongoDBAppName,
+	)
+
 	if configuration.Cfg.Environment == "PROD" {
-		fmt.Println("🚀 PROD environment: Using QuotaGuard SOCKS5 proxy for MongoDB connection")
-
-		if configuration.Cfg.QuotaGuardStaticURL == "" {
-			return fmt.Errorf("QuotaGuard URL is required in PROD environment")
-		}
-
-		proxyURL, err := url.Parse(configuration.Cfg.QuotaGuardStaticURL)
-		if err != nil {
-			return fmt.Errorf("invalid QuotaGuard URL: %v", err)
-		}
-
-		// Check if it's a SOCKS5 proxy
-		if !strings.HasPrefix(configuration.Cfg.QuotaGuardStaticURL, "socks5://") {
-			return fmt.Errorf("only SOCKS5 proxy is supported, got: %s", proxyURL.Scheme)
-		}
-
-		// Build MongoDB URI with SOCKS5 proxy parameters
-		mongoUri = fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s&proxyHost=%s&proxyPort=%s",
-			configuration.Cfg.MongoDBUsername,
-			configuration.Cfg.MongoDBPassword,
-			configuration.Cfg.MongoDBClustername,
-			configuration.Cfg.MongoDBAppName,
-			proxyURL.Hostname(),
-			proxyURL.Port(),
-		)
-
-		// Add proxy authentication if available
-		if proxyURL.User != nil {
-			username := proxyURL.User.Username()
-			password, _ := proxyURL.User.Password()
-			mongoUri += fmt.Sprintf("&proxyUsername=%s&proxyPassword=%s",
-				url.QueryEscape(username),
-				url.QueryEscape(password))
-		}
+		fmt.Println("🚀 PROD environment: Using QGTunnel for MongoDB connection via QuotaGuard proxy")
 	} else {
-		// Use standard mongodb+srv:// for direct connection (local development)
 		fmt.Printf("🏠 %s environment: Using direct MongoDB connection\n", configuration.Cfg.Environment)
-		mongoUri = fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
-			configuration.Cfg.MongoDBUsername,
-			configuration.Cfg.MongoDBPassword,
-			configuration.Cfg.MongoDBClustername,
-			configuration.Cfg.MongoDBAppName,
-		)
 	}
 
 	opts := options.Client().
@@ -92,7 +56,7 @@ func Connect() error {
 	}
 
 	if configuration.Cfg.Environment == "PROD" {
-		fmt.Println("✅ Successfully connected to MongoDB via QuotaGuard SOCKS5 proxy!")
+		fmt.Println("✅ Successfully connected to MongoDB via QGTunnel!")
 	} else {
 		fmt.Println("✅ Successfully connected to MongoDB directly!")
 	}

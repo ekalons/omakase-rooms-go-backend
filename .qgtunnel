@@ -1,0 +1,20 @@
+[
+  {
+    "remote_destination": "tcp://ac-1qoyups-shard-00-00.tdmleyq.mongodb.net:27017",
+    "local_port": 27017,
+    "transparent": true,
+    "encrypted": false
+  },
+  {
+    "remote_destination": "tcp://ac-1qoyups-shard-00-01.tdmleyq.mongodb.net:27017",
+    "local_port": 27018,
+    "transparent": true,
+    "encrypted": false
+  },
+  {
+    "remote_destination": "tcp://ac-1qoyups-shard-00-02.tdmleyq.mongodb.net:27017",
+    "local_port": 27019,
+    "transparent": true,
+    "encrypted": false
+  }
+]
