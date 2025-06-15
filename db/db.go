@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/ekalons/omakase-rooms-go-backend/models"
@@ -30,6 +31,7 @@ var mongoClient *mongo.Client
 func Connect() error {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
+	// Always use mongodb+srv:// for simplicity
 	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
 		configuration.Cfg.MongoDBUsername,
 		configuration.Cfg.MongoDBPassword,
@@ -46,18 +48,40 @@ func Connect() error {
 		SetMaxConnIdleTime(5 * time.Minute).
 		SetConnectTimeout(10 * time.Second)
 
-	proxyURLStr := configuration.Cfg.QuotaGuardStaticURL
-	proxyURL, err := url.Parse(proxyURLStr)
-	if err != nil {
-		return fmt.Errorf("invalid QuotaGuard URL: %v", err)
-	}
+	// Only use proxy in PROD environment (Heroku)
+	if configuration.Cfg.Environment == "PROD" {
+		fmt.Println("🚀 PROD environment: Using QuotaGuard SOCKS5 proxy for MongoDB connection")
 
-	dialer, err := proxy.FromURL(proxyURL, proxy.Direct)
-	if err != nil {
-		return fmt.Errorf("failed to create proxy dialer: %v", err)
-	}
+		if configuration.Cfg.QuotaGuardStaticURL == "" {
+			return fmt.Errorf("QuotaGuard URL is required in PROD environment")
+		}
 
-	opts.SetDialer(&customDialer{dialer: dialer})
+		proxyURL, err := url.Parse(configuration.Cfg.QuotaGuardStaticURL)
+		if err != nil {
+			return fmt.Errorf("invalid QuotaGuard URL: %v", err)
+		}
+
+		// Check if it's a SOCKS5 proxy
+		if strings.HasPrefix(configuration.Cfg.QuotaGuardStaticURL, "socks5://") {
+			// Extract credentials and host:port
+			auth := &proxy.Auth{}
+			if proxyURL.User != nil {
+				auth.User = proxyURL.User.Username()
+				auth.Password, _ = proxyURL.User.Password()
+			}
+
+			dialer, err := proxy.SOCKS5("tcp", proxyURL.Host, auth, proxy.Direct)
+			if err != nil {
+				return fmt.Errorf("failed to create SOCKS5 dialer: %v", err)
+			}
+
+			opts.SetDialer(&customDialer{dialer: dialer})
+		} else {
+			return fmt.Errorf("only SOCKS5 proxy is supported, got: %s", proxyURL.Scheme)
+		}
+	} else {
+		fmt.Printf("🏠 %s environment: Using direct MongoDB connection\n", configuration.Cfg.Environment)
+	}
 
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
@@ -68,7 +92,12 @@ func Connect() error {
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
 		return err
 	}
-	fmt.Println("Pinged your deployment. You successfully connected to MongoDB via QuotaGuard!")
+
+	if configuration.Cfg.Environment == "PROD" {
+		fmt.Println("✅ Successfully connected to MongoDB via QuotaGuard SOCKS5 proxy!")
+	} else {
+		fmt.Println("✅ Successfully connected to MongoDB directly!")
+	}
 	return nil
 }
 

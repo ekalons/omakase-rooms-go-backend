@@ -31,7 +31,7 @@ func Load() {
 
 	if os.Getenv("ENVIRONMENT") != "PROD" {
 		if err := godotenv.Load(); err != nil {
-			log.Fatal("Error loading .env file")
+			fmt.Println("Note: .env file not found, using environment variables directly")
 		}
 	}
 
