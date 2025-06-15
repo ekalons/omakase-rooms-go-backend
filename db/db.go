@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"time"
 
 	"github.com/ekalons/omakase-rooms-go-backend/models"
@@ -14,8 +16,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"golang.org/x/net/proxy"
+
 	configuration "github.com/ekalons/omakase-rooms-go-backend/config"
 )
+
+type customDialer struct {
+	dialer proxy.Dialer
+}
 
 var mongoClient *mongo.Client
 
@@ -38,7 +46,19 @@ func Connect() error {
 		SetMaxConnIdleTime(5 * time.Minute).
 		SetConnectTimeout(10 * time.Second)
 
-	// Create a new client and connect to the server
+	proxyURLStr := configuration.Cfg.QuotaGuardStaticURL
+	proxyURL, err := url.Parse(proxyURLStr)
+	if err != nil {
+		return fmt.Errorf("invalid QuotaGuard URL: %v", err)
+	}
+
+	dialer, err := proxy.FromURL(proxyURL, proxy.Direct)
+	if err != nil {
+		return fmt.Errorf("failed to create proxy dialer: %v", err)
+	}
+
+	opts.SetDialer(&customDialer{dialer: dialer})
+
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		return err
@@ -48,8 +68,12 @@ func Connect() error {
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
 		return err
 	}
-	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	fmt.Println("Pinged your deployment. You successfully connected to MongoDB via QuotaGuard!")
 	return nil
+}
+
+func (d *customDialer) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	return d.dialer.Dial(network, addr)
 }
 
 func Disconnect() {
@@ -97,13 +121,14 @@ func FetchRoomById(id string) (*models.Room, error) {
 	// Find the document in the collection and decode it into the result variable
 	collection := mongoClient.Database(configuration.Cfg.MongoDBDatabaseName).Collection(configuration.Cfg.MongoDBCollectionName)
 	err = collection.FindOne(context.TODO(), filter).Decode(&room)
+
 	if err == mongo.ErrNoDocuments {
-		return nil, nil // No document found
+		return nil, nil
 	} else if err != nil {
-		return nil, err // An error occurred
+		return nil, err
 	}
 
-	return &room, nil // Document found
+	return &room, nil
 }
 
 func InsertRoom(newRoom models.Room) (*mongo.InsertOneResult, error) {
