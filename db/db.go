@@ -22,14 +22,12 @@ var mongoClient *mongo.Client
 func Connect() error {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-	// Temporarily use direct connection in PROD to test basic connectivity
 	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
 		configuration.Cfg.MongoDBUsername,
 		configuration.Cfg.MongoDBPassword,
 		configuration.Cfg.MongoDBClustername,
 		configuration.Cfg.MongoDBAppName,
 	)
-	fmt.Printf("🔧 %s environment: Testing direct MongoDB connection\n", configuration.Cfg.Environment)
 
 	opts := options.Client().
 		ApplyURI(mongoUri).
@@ -49,10 +47,7 @@ func Connect() error {
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
 		return err
 	}
-
-	if configuration.Cfg.Environment == "PROD" {
-		fmt.Println("✅ Successfully connected to MongoDB directly!")
-	}
+	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 	return nil
 }
 
@@ -98,7 +93,6 @@ func FetchRoomById(id string) (*models.Room, error) {
 	// Create a variable to hold the result
 	var room models.Room
 
-	// Find the document in the collection and decode it into the result variable
 	collection := mongoClient.Database(configuration.Cfg.MongoDBDatabaseName).Collection(configuration.Cfg.MongoDBCollectionName)
 	err = collection.FindOne(context.TODO(), filter).Decode(&room)
 
@@ -108,7 +102,7 @@ func FetchRoomById(id string) (*models.Room, error) {
 		return nil, err
 	}
 
-	return &room, nil
+	return &room, nil // Document found
 }
 
 func InsertRoom(newRoom models.Room) (*mongo.InsertOneResult, error) {

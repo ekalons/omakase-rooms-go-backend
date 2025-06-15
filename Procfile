@@ -1,1 +1,0 @@
-web: if [ ! -f bin/qgtunnel ]; then curl -s https://s3.amazonaws.com/quotaguard/qgtunnel-latest.tar.gz | tar xz; fi && bin/qgtunnel bin/cmd 
