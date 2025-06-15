@@ -22,26 +22,14 @@ var mongoClient *mongo.Client
 func Connect() error {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-	var mongoUri string
-	if configuration.Cfg.Environment == "PROD" {
-		// In PROD, connect directly to localhost where QGTunnel is listening
-		// QGTunnel will proxy the connection to MongoDB Atlas via QuotaGuard
-		mongoUri = fmt.Sprintf("mongodb://%s:%s@localhost:27017/?retryWrites=true&w=majority&appName=%s",
-			configuration.Cfg.MongoDBUsername,
-			configuration.Cfg.MongoDBPassword,
-			configuration.Cfg.MongoDBAppName,
-		)
-		fmt.Println("🚀 PROD environment: Using QGTunnel for MongoDB connection via QuotaGuard proxy")
-	} else {
-		// In DEV, use standard mongodb+srv:// connection
-		mongoUri = fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
-			configuration.Cfg.MongoDBUsername,
-			configuration.Cfg.MongoDBPassword,
-			configuration.Cfg.MongoDBClustername,
-			configuration.Cfg.MongoDBAppName,
-		)
-		fmt.Printf("🏠 %s environment: Using direct MongoDB connection\n", configuration.Cfg.Environment)
-	}
+	// Temporarily use direct connection in PROD to test basic connectivity
+	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
+		configuration.Cfg.MongoDBUsername,
+		configuration.Cfg.MongoDBPassword,
+		configuration.Cfg.MongoDBClustername,
+		configuration.Cfg.MongoDBAppName,
+	)
+	fmt.Printf("🔧 %s environment: Testing direct MongoDB connection\n", configuration.Cfg.Environment)
 
 	opts := options.Client().
 		ApplyURI(mongoUri).
@@ -63,8 +51,6 @@ func Connect() error {
 	}
 
 	if configuration.Cfg.Environment == "PROD" {
-		fmt.Println("✅ Successfully connected to MongoDB via QGTunnel!")
-	} else {
 		fmt.Println("✅ Successfully connected to MongoDB directly!")
 	}
 	return nil
