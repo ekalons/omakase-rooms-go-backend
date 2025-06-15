@@ -31,13 +31,31 @@ var mongoClient *mongo.Client
 func Connect() error {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-	// Always use mongodb+srv:// for simplicity
-	mongoUri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
-		configuration.Cfg.MongoDBUsername,
-		configuration.Cfg.MongoDBPassword,
-		configuration.Cfg.MongoDBClustername,
-		configuration.Cfg.MongoDBAppName,
-	)
+	var mongoUri string
+
+	// Use different URI formats based on environment
+	if configuration.Cfg.Environment == "PROD" {
+		// Use expanded MongoDB URI for proxy connection (SRV records don't work well with proxies)
+		// Extract the cluster name from the existing config and build the shard hosts
+		clusterName := strings.Split(configuration.Cfg.MongoDBClustername, ".")[0]                       // Get "roomscluster" from "roomscluster.tdmleyq.mongodb.net"
+		clusterDomain := strings.Join(strings.Split(configuration.Cfg.MongoDBClustername, ".")[1:], ".") // Get "tdmleyq.mongodb.net"
+
+		mongoUri = fmt.Sprintf("mongodb://%s:%s@%s-shard-00-00.%s:27017,%s-shard-00-01.%s:27017,%s-shard-00-02.%s:27017/?ssl=true&authSource=admin&retryWrites=true&w=majority",
+			configuration.Cfg.MongoDBUsername,
+			configuration.Cfg.MongoDBPassword,
+			clusterName, clusterDomain,
+			clusterName, clusterDomain,
+			clusterName, clusterDomain,
+		)
+	} else {
+		// Use mongodb+srv:// for direct connection (local development)
+		mongoUri = fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
+			configuration.Cfg.MongoDBUsername,
+			configuration.Cfg.MongoDBPassword,
+			configuration.Cfg.MongoDBClustername,
+			configuration.Cfg.MongoDBAppName,
+		)
+	}
 
 	opts := options.Client().
 		ApplyURI(mongoUri).
