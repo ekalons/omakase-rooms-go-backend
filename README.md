@@ -8,7 +8,7 @@ A GoLang + Docker backend service with clean architecture for the Omakase Rooms 
 
 1. Clone the repository
 2. Install Go
-3. Add the required environment variables in a `.env` file in the root directory. The required variables can be found in the `.env.example` file.
+3. Add the required environment variables in a `.env` file in the root directory. The required variables can be found in the `.env.example` file
 
 ### Without Docker
 
