@@ -39,6 +39,7 @@ type Room struct {
 	Rating        float64            `json:"rating" bson:"rating"`
 	ReviewCount   int                `json:"review_count" bson:"review_count"`
 	ServeStyle    ServeStyle         `json:"serve_style" bson:"serve_style"`
+	URL           string             `json:"url" bson:"url"`
 }
 
 func (r *Room) Validate() error {
@@ -60,6 +61,7 @@ func (r *Room) Validate() error {
 		validateRange("Rating", r.Rating, 0, MaxRating),
 		validateMinimum("ReviewCount", r.ReviewCount, 0),
 		validateCoordinates(r.Coordinates),
+		validateURL("URL", r.URL),
 	)
 
 	errors = removeEmptyStrings(errors)
